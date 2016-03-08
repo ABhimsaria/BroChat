@@ -7,7 +7,7 @@
         android:orderInCategory="100" 
         android:showAsAction="always" 
         android:title="@string/menu_camera_label" 
-        android:icon="@drawable/ic_photo_camera_black_24dp"/>
+        android:icon="@drawable/ic_photo_camera_white_36dp"/>
     
     <item android:id="@+id/action_edit_friends" 
         android:orderInCategory="100" 

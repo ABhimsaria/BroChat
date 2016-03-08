@@ -23,7 +23,7 @@ public final class R {
     }
     public static final class drawable {
         public static final int ic_launcher=0x7f020000;
-        public static final int ic_photo_camera_black_24dp=0x7f020001;
+        public static final int ic_photo_camera_white_36dp=0x7f020001;
     }
     public static final class id {
         public static final int action_camera=0x7f08000a;
