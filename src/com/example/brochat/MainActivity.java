@@ -1,5 +1,10 @@
 package com.example.brochat;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import com.parse.ParseAnalytics;
 import com.parse.ParseUser;
 
@@ -68,7 +73,38 @@ public class MainActivity extends FragmentActivity implements
 			//Using EEnvironment.getExternalStorageState() before doing this.
 			if(isExternalStorageAvailable()){
 				//get the URI
-				return null;
+				
+				//1. Get the external Storage Directory.
+				String appName=MainActivity.this.getString(R.string.app_name);
+				File mediaStorageDir = new File(
+						Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+						appName);
+				
+				//2. Create Our Sub Directory.
+				if(! mediaStorageDir.exists()){
+					if(! mediaStorageDir.mkdirs()){
+						Log.e(TAG, "Failed to create sub-directory");
+						return null;
+					}
+				}
+				//3. Create a file name.
+				//4. Create a file.
+				File mediaFile;
+				Date now=new Date();
+				String timestamp=new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ENGLISH).format(now);
+				String path=mediaStorageDir.getPath() + File.separator;
+				if(mediaType == MEDIA_TYPE_IMAGE){
+					mediaFile = new File(path + "IMG_" + timestamp + ".jpg");
+				}
+				else if(mediaType == MEDIA_TYPE_VIDEO){
+					mediaFile = new File(path + "VID_" + timestamp + ".mp4");
+				}
+				else{
+					return null;
+				}
+				Log.d(TAG,"File" + Uri.fromFile(mediaFile));
+				//5. Return the file URI.
+				return Uri.fromFile(mediaFile);
 			}
 			else{
 				return null;
