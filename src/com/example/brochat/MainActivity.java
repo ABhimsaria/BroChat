@@ -1,31 +1,24 @@
 package com.example.brochat;
 
-import java.util.Locale;
+import com.parse.ParseAnalytics;
+import com.parse.ParseUser;
 
 import android.app.ActionBar;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.TextView;
-
-import com.parse.ParseAnalytics;
-import com.parse.ParseUser;
+import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity implements
 		ActionBar.TabListener {
@@ -37,6 +30,12 @@ public class MainActivity extends FragmentActivity implements
 	public static final int CHOOSE_PHOTO_REQUEST = 2;
 	public static final int CHOOSE_VIDEO_REQUEST = 3;
 	
+
+	public static final int MEDIA_TYPE_IMAGE = 4;
+	public static final int MEDIA_TYPE_VIDEO = 5;
+	
+	protected Uri mMediaUri;
+	
 	protected DialogInterface.OnClickListener mDialogListener = 
 			new DialogInterface.OnClickListener() {
 		@Override
@@ -44,7 +43,16 @@ public class MainActivity extends FragmentActivity implements
 			switch(which){
 				case 0: //Take Photos
 					Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+					mMediaUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
+					if(mMediaUri == null){
+						//display an error
+						Toast.makeText(MainActivity.this,R.string.error_external_storage, 
+								Toast.LENGTH_LONG).show();
+					}
+					else{
+					takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, mMediaUri);
 					startActivityForResult(takePhotoIntent, TAKE_PHOTO_REQUEST);
+					}
 						break;
 				case 1: //Take Videos
 						break;
@@ -52,6 +60,28 @@ public class MainActivity extends FragmentActivity implements
 						break;
 				case 3: //Choose Videos
 						break;
+			}
+		}
+
+		private Uri getOutputMediaFileUri(int mediaType) {
+			// TObe Safe you should check if the SDCard is properly mounted or not.
+			//Using EEnvironment.getExternalStorageState() before doing this.
+			if(isExternalStorageAvailable()){
+				//get the URI
+				return null;
+			}
+			else{
+				return null;
+			}
+		}
+		private boolean isExternalStorageAvailable(){
+			String state = Environment.getExternalStorageState();
+			
+			if(state.equals(Environment.MEDIA_MOUNTED)){
+				return true;
+			}
+			else{
+				return false;
 			}
 		}
 	};
