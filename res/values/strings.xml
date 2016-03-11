@@ -24,5 +24,11 @@
     <string name="menu_logout_label">Logout</string>
     <string name="sign_up_error_title">Ooops</string>
     <string name="title_activity_edit_friends">Edit Friends</string>
+    <string-array name="camera_choices">
+        <item >Take Photos</item>
+        <item >Take Videos</item>
+        <item >Choose photos</item>
+        <item >Choose Videos</item>
+    </string-array>
 
 </resources>

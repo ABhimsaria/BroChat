@@ -3,7 +3,10 @@ package com.example.brochat;
 import java.util.Locale;
 
 import android.app.ActionBar;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -27,6 +30,22 @@ public class MainActivity extends FragmentActivity implements
 		ActionBar.TabListener {
 	
 	public static final String TAG = MainActivity.class.getSimpleName();
+	protected DialogInterface.OnClickListener mDialogListener = 
+			new DialogInterface.OnClickListener() {
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			switch(which){
+				case 0: //Take Photos
+						break;
+				case 1: //Take Videos
+						break;
+				case 2: //Choose Photos
+						break;
+				case 3: //Choose Videos
+						break;
+			}
+		}
+	};
 
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -113,13 +132,18 @@ public class MainActivity extends FragmentActivity implements
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int itemId = item.getItemId();
 		
-		if (itemId == R.id.logout_settings) {
-			ParseUser.logOut();
-			navigateToLogin();
-		}
-		else if(itemId == R.id.action_edit_friends){
-			Intent intent=new Intent(this, EditFriendsActivity.class);
-			startActivity(intent);
+		switch (itemId) {
+			case R.id.logout_settings:
+				ParseUser.logOut();
+				navigateToLogin();
+			case  R.id.action_edit_friends:
+				Intent intent=new Intent(this, EditFriendsActivity.class);
+				startActivity(intent);
+			case  R.id.action_camera:
+				AlertDialog.Builder builder=new AlertDialog.Builder(this);
+				builder.setItems(R.array.camera_choices, mDialogListener);
+				AlertDialog dialog = builder.create();
+				dialog.show();
 		}
 		
 		return super.onOptionsItemSelected(item);
