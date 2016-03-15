@@ -63,6 +63,7 @@ public final class R {
         public static final int empty_friends_label=0x7f050011;
         public static final int empty_inbox_label=0x7f050010;
         public static final int error_external_storage=0x7f05000f;
+        public static final int general_error=0x7f050017;
         public static final int hello_world=0x7f050004;
         public static final int login_button_label=0x7f050009;
         public static final int login_error_message=0x7f050014;
@@ -74,7 +75,7 @@ public final class R {
         public static final int sign_up_error_title=0x7f050016;
         public static final int sign_up_text=0x7f05000a;
         public static final int signup_error_message=0x7f050013;
-        public static final int title_activity_edit_friends=0x7f050017;
+        public static final int title_activity_edit_friends=0x7f050018;
         public static final int title_activity_login=0x7f050006;
         public static final int title_activity_sign_up=0x7f05000c;
         public static final int title_section1=0x7f050001;
