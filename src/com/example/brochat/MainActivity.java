@@ -5,9 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import com.parse.ParseAnalytics;
-import com.parse.ParseUser;
-
 import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.FragmentTransaction;
@@ -22,8 +19,10 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
 import android.widget.Toast;
+
+import com.parse.ParseAnalytics;
+import com.parse.ParseUser;
 
 public class MainActivity extends FragmentActivity implements
 		ActionBar.TabListener {
@@ -32,10 +31,9 @@ public class MainActivity extends FragmentActivity implements
 	
 	public static final int TAKE_PHOTO_REQUEST = 0;
 	public static final int TAKE_VIDEO_REQUEST = 1;
-	public static final int CHOOSE_PHOTO_REQUEST = 2;
-	public static final int CHOOSE_VIDEO_REQUEST = 3;
+	public static final int PICK_PHOTO_REQUEST = 2;
+	public static final int PICK_VIDEO_REQUEST = 3;
 	
-
 	public static final int MEDIA_TYPE_IMAGE = 4;
 	public static final int MEDIA_TYPE_VIDEO = 5;
 	
@@ -45,78 +43,96 @@ public class MainActivity extends FragmentActivity implements
 			new DialogInterface.OnClickListener() {
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
-			switch(which){
-				case 0: //Take Photos
+			switch(which) {
+				case 0: // Take picture
 					Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 					mMediaUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
-					if(mMediaUri == null){
-						//display an error
-						Toast.makeText(MainActivity.this,R.string.error_external_storage, 
+					if (mMediaUri == null) {
+						// display an error
+						Toast.makeText(MainActivity.this, R.string.error_external_storage,
 								Toast.LENGTH_LONG).show();
+					} 
+					else {
+						takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, mMediaUri);
+						startActivityForResult(takePhotoIntent, TAKE_PHOTO_REQUEST);
 					}
-					else{
-					takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, mMediaUri);
-					startActivityForResult(takePhotoIntent, TAKE_PHOTO_REQUEST);
+					break;
+				case 1: // Take video
+					Intent videoIntent=new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+					mMediaUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
+					if (mMediaUri == null) {
+						// display an error
+						Toast.makeText(MainActivity.this, R.string.error_external_storage,
+								Toast.LENGTH_LONG).show();
+					} 
+					else {
+						videoIntent.putExtra(MediaStore.EXTRA_OUTPUT, mMediaUri);
+						videoIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 10);
+						videoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0);//for low resolution
+						startActivityForResult(videoIntent, TAKE_VIDEO_REQUEST);
 					}
-						break;
-				case 1: //Take Videos
-						break;
-				case 2: //Choose Photos
-						break;
-				case 3: //Choose Videos
-						break;
+					break;
+				case 2: // Choose picture
+					break;
+				case 3: // Choose video
+					break;
 			}
 		}
 
 		private Uri getOutputMediaFileUri(int mediaType) {
-			// TObe Safe you should check if the SDCard is properly mounted or not.
-			//Using EEnvironment.getExternalStorageState() before doing this.
-			if(isExternalStorageAvailable()){
-				//get the URI
+			// To be safe, you should check that the SDCard is mounted
+		    // using Environment.getExternalStorageState() before doing this.
+			if (isExternalStorageAvailable()) {
+				// get the URI
 				
-				//1. Get the external Storage Directory.
-				String appName=MainActivity.this.getString(R.string.app_name);
+				// 1. Get the external storage directory
+				String appName = MainActivity.this.getString(R.string.app_name);
 				File mediaStorageDir = new File(
 						Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
 						appName);
 				
-				//2. Create Our Sub Directory.
-				if(! mediaStorageDir.exists()){
-					if(! mediaStorageDir.mkdirs()){
-						Log.e(TAG, "Failed to create sub-directory");
+				// 2. Create our subdirectory
+				if (! mediaStorageDir.exists()) {
+					if (! mediaStorageDir.mkdirs()) {
+						Log.e(TAG, "Failed to create directory.");
 						return null;
 					}
 				}
-				//3. Create a file name.
-				//4. Create a file.
+				
+				// 3. Create a file name
+				// 4. Create the file
 				File mediaFile;
-				Date now=new Date();
-				String timestamp=new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ENGLISH).format(now);
-				String path=mediaStorageDir.getPath() + File.separator;
-				if(mediaType == MEDIA_TYPE_IMAGE){
+				Date now = new Date();
+				String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(now);
+				
+				String path = mediaStorageDir.getPath() + File.separator;
+				if (mediaType == MEDIA_TYPE_IMAGE) {
 					mediaFile = new File(path + "IMG_" + timestamp + ".jpg");
 				}
-				else if(mediaType == MEDIA_TYPE_VIDEO){
+				else if (mediaType == MEDIA_TYPE_VIDEO) {
 					mediaFile = new File(path + "VID_" + timestamp + ".mp4");
 				}
-				else{
+				else {
 					return null;
 				}
-				Log.d(TAG,"File" + Uri.fromFile(mediaFile));
-				//5. Return the file URI.
+				
+				Log.d(TAG, "File: " + Uri.fromFile(mediaFile));
+				
+				// 5. Return the file's URI				
 				return Uri.fromFile(mediaFile);
 			}
-			else{
+			else {
 				return null;
 			}
 		}
-		private boolean isExternalStorageAvailable(){
+		
+		private boolean isExternalStorageAvailable() {
 			String state = Environment.getExternalStorageState();
 			
-			if(state.equals(Environment.MEDIA_MOUNTED)){
+			if (state.equals(Environment.MEDIA_MOUNTED)) {
 				return true;
 			}
-			else{
+			else {
 				return false;
 			}
 		}
@@ -140,7 +156,6 @@ public class MainActivity extends FragmentActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_main);
 		
 		ParseAnalytics.trackAppOpened(getIntent());
@@ -193,13 +208,13 @@ public class MainActivity extends FragmentActivity implements
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		
-		if(resultCode == RESULT_OK){
-			//Add the image to gallery
+		if (resultCode == RESULT_OK) {
+			// add it to the Gallery
 			Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
 			mediaScanIntent.setData(mMediaUri);
 			sendBroadcast(mediaScanIntent);
 		}
-		else if(resultCode != RESULT_CANCELED){
+		else if (resultCode != RESULT_CANCELED) {
 			Toast.makeText(this, "Sorry an Error Occured!", Toast.LENGTH_LONG).show();
 		}
 	}
@@ -222,15 +237,15 @@ public class MainActivity extends FragmentActivity implements
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int itemId = item.getItemId();
 		
-		switch (itemId) {
-			case R.id.logout_settings:
+		switch(itemId) {
+			case R.id.action_logout:
 				ParseUser.logOut();
 				navigateToLogin();
-			case  R.id.action_edit_friends:
-				Intent intent=new Intent(this, EditFriendsActivity.class);
+			case R.id.action_edit_friends:
+				Intent intent = new Intent(this, EditFriendsActivity.class);
 				startActivity(intent);
-			case  R.id.action_camera:
-				AlertDialog.Builder builder=new AlertDialog.Builder(this);
+			case R.id.action_camera:
+				AlertDialog.Builder builder = new AlertDialog.Builder(this);
 				builder.setItems(R.array.camera_choices, mDialogListener);
 				AlertDialog dialog = builder.create();
 				dialog.show();

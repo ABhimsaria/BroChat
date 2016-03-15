@@ -31,10 +31,10 @@ public final class R {
     public static final class id {
         public static final int action_camera=0x7f09000a;
         public static final int action_edit_friends=0x7f09000b;
+        public static final int action_logout=0x7f09000c;
         public static final int action_settings=0x7f090009;
         public static final int emailField=0x7f090007;
         public static final int loginButton=0x7f090002;
-        public static final int logout_settings=0x7f09000c;
         public static final int pager=0x7f090004;
         public static final int passwordField=0x7f090001;
         public static final int passwordField1=0x7f090006;
