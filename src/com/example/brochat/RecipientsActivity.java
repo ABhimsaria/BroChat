@@ -1,15 +1,20 @@
 package com.example.brochat;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseFile;
+import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
@@ -19,6 +24,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class RecipientsActivity extends ListActivity {
 
@@ -28,6 +34,8 @@ public class RecipientsActivity extends ListActivity {
 	protected ParseRelation<ParseUser> mFriendsRelation;
 	protected ParseUser mCurrentUser;
 	protected MenuItem mSendMenuItem;
+	protected Uri mMediaUri;
+	protected String mFileType;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +43,9 @@ public class RecipientsActivity extends ListActivity {
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_recipients);
 		getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+		
+		mMediaUri = getIntent().getData();
+		mFileType = getIntent().getExtras().getString(ParseConstants.KEY_FILE_TYPE);
 	}
 	@Override
 	public void onResume() {
@@ -96,8 +107,21 @@ public class RecipientsActivity extends ListActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()){
 		case android.R.id.home:
-		NavUtils.navigateUpFromSameTask(this);
-		return true;
+			NavUtils.navigateUpFromSameTask(this);
+			return true;
+		case R.id.action_send:
+			ParseObject message=createMessage();
+			if(message == null){
+				AlertDialog.Builder builder= new AlertDialog.Builder(this);
+				builder.setMessage("There was an error in Selected file. Please Select a new File")
+				.setTitle("We'r Sorry!")
+				.setPositiveButton(android.R.string.ok, null);
+				AlertDialog dialog= builder.create();
+				dialog.show();
+			}else{
+				send(message);
+				finish();
+			}return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -110,5 +134,56 @@ public class RecipientsActivity extends ListActivity {
 		}else{
 			mSendMenuItem.setVisible(false);
 		}
+	}
+	protected ParseObject createMessage(){
+		ParseObject message=new ParseObject(ParseConstants.CLASS_MESSAGES);
+		message.put(ParseConstants.KEY_SENDER_ID, ParseUser.getCurrentUser().getObjectId());
+		message.put(ParseConstants.KEY_SENDER_NAME, ParseUser.getCurrentUser().getUsername());
+		message.put(ParseConstants.KEY_RECIPIENTS_IDS, getRecipientsIds());
+		message.put(ParseConstants.KEY_FILE_TYPE, mFileType);
+		
+		byte[] fileBytes = FileHelper.getByteArrayFromFile(this, mMediaUri);
+		
+		if(fileBytes == null){
+			return null;
+		}
+		else{
+			if(mFileType.equals(ParseConstants.TYPE_IAMGE)){
+				fileBytes = FileHelper.reduceImageForUpload(fileBytes);
+			}
+			String fileName = FileHelper.getFileName(this, mMediaUri, mFileType);
+			ParseFile file=new ParseFile(fileName,fileBytes);
+			message.put(ParseConstants.KEY_FILE, file);
+			
+			return message;
+		}
+	}
+	protected ArrayList<String> getRecipientsIds(){
+		ArrayList<String> recipientsIds = new ArrayList<String>();
+		for (int i=0; i<getListView().getCount();i++){
+			if(getListView().isItemChecked(i)){
+				recipientsIds.add(mFriends.get(i).getObjectId());
+			}
+		}
+		return recipientsIds;
+	}
+	protected void send(ParseObject message){
+		message.saveInBackground(new SaveCallback() {
+			@Override
+			public void done(ParseException arg0) {
+				if(arg0 == null){
+					Toast.makeText(RecipientsActivity.this, "Successfully Sent!", Toast.LENGTH_LONG).show();
+				}
+				else{
+					AlertDialog.Builder builder= new AlertDialog.Builder(RecipientsActivity.this);
+					builder.setMessage("There was an error in Sending ur message. Please try Again")
+					.setTitle("We'r Sorry!")
+					.setPositiveButton(android.R.string.ok, null);
+					AlertDialog dialog= builder.create();
+					dialog.show();
+				
+				}
+			}
+		});
 	}
 }
