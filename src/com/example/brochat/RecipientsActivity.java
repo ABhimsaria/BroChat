@@ -16,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 public class RecipientsActivity extends ListActivity {
 
@@ -30,6 +31,7 @@ public class RecipientsActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_recipients);
+		getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 	}
 	@Override
 	public void onResume() {
