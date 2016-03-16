@@ -259,7 +259,10 @@ public class MainActivity extends FragmentActivity implements
 				Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
 				mediaScanIntent.setData(mMediaUri);
 				sendBroadcast(mediaScanIntent);
-			}			
+			}
+			Intent recipientsIntent=new Intent(this, RecipientsActivity.class);
+			recipientsIntent.setData(mMediaUri);
+			startActivity(recipientsIntent);
 		}
 		else if (resultCode != RESULT_CANCELED) {
 			Toast.makeText(this, R.string.general_error, Toast.LENGTH_LONG).show();

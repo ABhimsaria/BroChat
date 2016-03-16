@@ -26,11 +26,14 @@
     <string name="sign_up_error_title">Ooops</string>
     <string name="general_error">Sorry, there was an error!</string>
     <string name="title_activity_edit_friends">Edit Friends</string>
+
     <string-array name="camera_choices">
-        <item >Take Photos</item>
-        <item >Take Videos</item>
-        <item >Choose photos</item>
-        <item >Choose Videos</item>
+        <item>Take Photos</item>
+        <item>Take Videos</item>
+        <item>Choose photos</item>
+        <item>Choose Videos</item>
     </string-array>
+
+    <string name="title_activity_recipients">Choose Recipients</string>
 
 </resources>
