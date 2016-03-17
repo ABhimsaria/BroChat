@@ -82,7 +82,7 @@ public class FileHelper {
 	public static String getFileName(Context context, Uri uri, String fileType) {
 		String fileName = "uploaded_file.";
 		
-		if (fileType.equals(ParseConstants.TYPE_IAMGE)) {
+		if (fileType.equals(ParseConstants.TYPE_IMAGE)) {
 			fileName += "png";
 		}
 		else {

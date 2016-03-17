@@ -8,9 +8,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import com.parse.ParseAnalytics;
-import com.parse.ParseUser;
-
 import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.FragmentTransaction;
@@ -25,7 +22,11 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
 import android.widget.Toast;
+
+import com.parse.ParseAnalytics;
+import com.parse.ParseUser;
 
 public class MainActivity extends FragmentActivity implements
 		ActionBar.TabListener {
@@ -39,7 +40,8 @@ public class MainActivity extends FragmentActivity implements
 	
 	public static final int MEDIA_TYPE_IMAGE = 4;
 	public static final int MEDIA_TYPE_VIDEO = 5;
-	public static final int FILE_SIZE_LIMIT = 1024*1024*10; //10MB	
+	
+	public static final int FILE_SIZE_LIMIT = 1024*1024*10; // 10 MB
 	
 	protected Uri mMediaUri;
 	
@@ -55,24 +57,24 @@ public class MainActivity extends FragmentActivity implements
 						// display an error
 						Toast.makeText(MainActivity.this, R.string.error_external_storage,
 								Toast.LENGTH_LONG).show();
-					} 
+					}
 					else {
 						takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, mMediaUri);
 						startActivityForResult(takePhotoIntent, TAKE_PHOTO_REQUEST);
 					}
 					break;
 				case 1: // Take video
-					Intent videoIntent=new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+					Intent videoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
 					mMediaUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
 					if (mMediaUri == null) {
 						// display an error
 						Toast.makeText(MainActivity.this, R.string.error_external_storage,
 								Toast.LENGTH_LONG).show();
-					} 
+					}
 					else {
 						videoIntent.putExtra(MediaStore.EXTRA_OUTPUT, mMediaUri);
 						videoIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 10);
-						videoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0);//for low resolution
+						videoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0); // 0 = lowest res
 						startActivityForResult(videoIntent, TAKE_VIDEO_REQUEST);
 					}
 					break;
@@ -84,7 +86,7 @@ public class MainActivity extends FragmentActivity implements
 				case 3: // Choose video
 					Intent chooseVideoIntent = new Intent(Intent.ACTION_GET_CONTENT);
 					chooseVideoIntent.setType("video/*");
-					Toast.makeText(MainActivity.this, "Video must be less than 10MB", Toast.LENGTH_LONG).show();
+					Toast.makeText(MainActivity.this, R.string.video_file_size_warning, Toast.LENGTH_LONG).show();
 					startActivityForResult(chooseVideoIntent, PICK_VIDEO_REQUEST);
 					break;
 			}
@@ -167,6 +169,7 @@ public class MainActivity extends FragmentActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_main);
 		
 		ParseAnalytics.trackAppOpened(getIntent());
@@ -219,57 +222,62 @@ public class MainActivity extends FragmentActivity implements
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		
-		if (resultCode == RESULT_OK) {
-			// add it to the Gallery
-			
-			if(requestCode == PICK_PHOTO_REQUEST || requestCode == PICK_VIDEO_REQUEST){
-				if(data == null){
+		if (resultCode == RESULT_OK) {			
+			if (requestCode == PICK_PHOTO_REQUEST || requestCode == PICK_VIDEO_REQUEST) {
+				if (data == null) {
 					Toast.makeText(this, getString(R.string.general_error), Toast.LENGTH_LONG).show();
-				}else{
+				}
+				else {
 					mMediaUri = data.getData();
 				}
-				if(requestCode == PICK_VIDEO_REQUEST){
-					//Wanna make Sure that file size is less than  10 MB.
+				
+				Log.i(TAG, "Media URI: " + mMediaUri);
+				if (requestCode == PICK_VIDEO_REQUEST) {
+					// make sure the file is less than 10 MB
 					int fileSize = 0;
 					InputStream inputStream = null;
-					try{
-						inputStream=getContentResolver().openInputStream(mMediaUri);
+					
+					try {
+						inputStream = getContentResolver().openInputStream(mMediaUri);
 						fileSize = inputStream.available();
 					}
-					catch(FileNotFoundException e){
-						Toast.makeText(this,"There was a problem with a selected File", Toast.LENGTH_LONG).show();
+					catch (FileNotFoundException e) {
+						Toast.makeText(this, R.string.error_opening_file, Toast.LENGTH_LONG).show();
 						return;
 					}
-					catch(IOException e){
-						Toast.makeText(this,"There was a problem with a selected File", Toast.LENGTH_LONG).show();
+					catch (IOException e) {
+						Toast.makeText(this, R.string.error_opening_file, Toast.LENGTH_LONG).show();
 						return;
 					}
-					finally{
+					finally {
 						try {
 							inputStream.close();
-						} catch (IOException e) {
-						}
+						} catch (IOException e) { /* Intentionally blank */ }
 					}
-					if(fileSize >= FILE_SIZE_LIMIT){
-						Toast.makeText(this, "File Size too long! Please Select a new File", Toast.LENGTH_LONG).show();
+					
+					if (fileSize >= FILE_SIZE_LIMIT) {
+						Toast.makeText(this, R.string.error_file_size_too_large, Toast.LENGTH_LONG).show();
 						return;
 					}
 				}
-			}else{
+			}
+			else {
 				Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
 				mediaScanIntent.setData(mMediaUri);
 				sendBroadcast(mediaScanIntent);
 			}
-			Intent recipientsIntent=new Intent(this, RecipientsActivity.class);
+			
+			Intent recipientsIntent = new Intent(this, RecipientsActivity.class);
 			recipientsIntent.setData(mMediaUri);
 			
 			String fileType;
-			if(requestCode == PICK_PHOTO_REQUEST || requestCode == TAKE_PHOTO_REQUEST){
-				fileType = ParseConstants.TYPE_IAMGE;
+			if (requestCode == PICK_PHOTO_REQUEST || requestCode == TAKE_PHOTO_REQUEST) {
+				fileType = ParseConstants.TYPE_IMAGE;
 			}
-			else{
+			else {
 				fileType = ParseConstants.TYPE_VIDEO;
 			}
+			
 			recipientsIntent.putExtra(ParseConstants.KEY_FILE_TYPE, fileType);
 			startActivity(recipientsIntent);
 		}

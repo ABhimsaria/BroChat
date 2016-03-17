@@ -1,6 +1,5 @@
 package com.example.brochat;
 
-
 import java.util.Locale;
 
 import android.content.Context;
